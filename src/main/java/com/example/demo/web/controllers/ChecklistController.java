@@ -1,15 +1,19 @@
 package com.example.demo.web.controllers;
 
+import com.example.demo.Entity.ChecklistEntity;
+import com.example.demo.web.dto.request.ChecklistFiltroDTO;
 import com.example.demo.web.dto.request.ChecklistRequestDTO;
 import com.example.demo.web.dto.response.ApiResponseDTO;
 
 import com.example.demo.service.ChecklistService;
 import com.example.demo.web.dto.response.ChecklistResponseDTO;
+import org.springframework.data.domain.Page;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,9 +23,14 @@ public class ChecklistController {
     @Autowired
     private ChecklistService checklistService;
 
+    @GetMapping("/filter")
+    public ResponseEntity<Page<ChecklistResponseDTO>> getChecklistFilter(@ModelAttribute  ChecklistFiltroDTO checklistFiltroDTO, Pageable pageable) {
+        return ResponseEntity.ok(checklistService.filtrar(checklistFiltroDTO, pageable));
+    }
+
     @GetMapping
-    public ResponseEntity<List<ChecklistResponseDTO>> getAll() {
-        return ResponseEntity.ok(checklistService.findAll());
+    public ResponseEntity<Page<ChecklistResponseDTO>> getAll(Pageable pageable) {
+        return ResponseEntity.ok(checklistService.findAll(pageable));
     }
 
     @GetMapping("/{id}")

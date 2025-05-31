@@ -1,6 +1,7 @@
 package com.example.demo.service;
 
 import com.example.demo.Entity.ChecklistEntity;
+import com.example.demo.web.dto.request.ChecklistFiltroDTO;
 import com.example.demo.web.dto.request.ChecklistRequestDTO;
 import com.example.demo.web.dto.response.ApiResponseDTO;
 import com.example.demo.web.dto.response.ChecklistResponseDTO;
@@ -9,16 +10,18 @@ import com.example.demo.service.imp.ChecklistInterface;
 import com.example.demo.web.mapper.ChecklistMapper;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.config.ConfigDataResourceNotFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import org.springframework.data.domain.Pageable;
+import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
 
 @Service
 public class ChecklistService implements ChecklistInterface {
@@ -26,11 +29,17 @@ public class ChecklistService implements ChecklistInterface {
     private ChecklistRepository checklistRepository;
 
     @Override
-    public List<ChecklistResponseDTO> findAll() {
-        return checklistRepository.findAll()
-                .stream()
-                .map(ChecklistMapper::toDTO)
-                .collect(Collectors.toList());
+    public Page<ChecklistResponseDTO> filtrar(ChecklistFiltroDTO checklistFiltroDTO, Pageable pageable) {
+        LocalDate dataInicial = YearMonth.parse(checklistFiltroDTO.dataInicial()).atDay(1);
+        LocalDate dataFinal = YearMonth.parse(checklistFiltroDTO.dataFinal()).atEndOfMonth();
+        Page<ChecklistEntity> checklistFilter = checklistRepository.buscarPorPeriodo(dataInicial, dataFinal, pageable);
+        return checklistFilter.map(ChecklistMapper::toDTO);
+        }
+
+    @Override
+    public Page<ChecklistResponseDTO> findAll(Pageable pageable) {
+        return checklistRepository.findAll(pageable)
+                .map(ChecklistMapper::toDTO);
     }
 
     @Override
